@@ -49,8 +49,8 @@ static inline uint16_t read16(const uint8_t *p) { return (uint16_t)(p[0] | (p[1]
  *   本函数写 (B,G,R,A); 二进制 st4 为 (v16,v17,v18,v19), 三者与注释 (G,B,R,A)
  *   互不一致 —— 确切打包需上机对照 Bitmap 格式确认, 不可臆断。 */
 static void yuv_luma_8px(uint8_t *dst, const uint8_t *y,
-                         const uint8_t *u, const uint8_t *v) {
-    for (int i = 0; i < 8; i++) {
+                         const uint8_t *u, const uint8_t *v, int count) {
+    for (int i = 0; i < count; i++) {
         int Y = y[i];
         int U = u[i >> 1];          /* 半分辨率色度, 最近邻 */
         int V = v[i >> 1];
@@ -79,7 +79,7 @@ static void yuv_luma_8px_uvinterleaved(uint8_t *dst, const uint8_t *y,
     /* 再按 i>>1 归并到 4 采样 */
     uint8_t U[4], V[4];
     for (int i = 0; i < 4; i++) { U[i] = uu[i*2]; V[i] = vv[i*2]; }
-    yuv_luma_8px(dst, y, U, V);
+    yuv_luma_8px(dst, y, U, V, 8);
 }
 
 /* ---------- 8x8 转置核 (还原 #0x3a1c, rot90 基础) ----------
