@@ -98,10 +98,10 @@ static void plane_transpose(uint8_t *out, const uint8_t *in,
 static void yuv_px_scalar(uint8_t *dst, const uint8_t *y, const uint8_t *u,
                           const uint8_t *v, const uint8_t *coeff) {
     int Y = y[0], U = u[0], V = v[0];
-    int tB = (Y * 257 * (int16_t)read16(coeff + 0x10)) >> 16;
-    int g = (tB + U * coeff[0] - (int16_t)read16(coeff + 0x12)) >> 6;
-    int b = (tB + (int16_t)read16(coeff + 0x14) - U * coeff[2] - V * coeff[3]) >> 6;
-    int r = (tB + V * coeff[1] - (int16_t)read16(coeff + 0x16)) >> 6;
+    int tB = (Y * 257 * K_COEFF_H[0]) >> 16;
+    int g = (tB + U * coeff[0] - K_COEFF_H[1]) >> 6;
+    int b = (tB + K_COEFF_H[2] - U * coeff[2] - V * coeff[3]) >> 6;
+    int r = (tB + V * coeff[1] - K_COEFF_H[3]) >> 6;
     dst[0] = (uint8_t)clamp8(g); dst[1] = (uint8_t)clamp8(b);
     dst[2] = (uint8_t)clamp8(r); dst[3] = 0xFF;
 }
