@@ -1,4 +1,4 @@
-﻿name: Build native .so (arm64-v8a)
+name: Build APK (arm64-v8a)
 
 on:
   push:
@@ -6,30 +6,37 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Android NDK r25b
-        run: |
-          curl -L -o ndk.zip https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
-          unzip -q ndk.zip
-          echo "NDK=$PWD/android-ndk-r25b" >> "$GITHUB_ENV"
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
-      - name: ndk-build (libimage_processing_util_jni)
+      - name: Set up Android SDK + NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK packages (platform, build-tools, NDK, CMake)
         run: |
-          export PATH="$NDK:$PATH"
-          cd libimage_processing_util_jni
-          ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=jni/Android.mk NDK_APPLICATION_MK=jni/Application.mk
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.2.9519653" "cmake;3.22.1"
 
       - name: Self-test C algorithm (gcc)
-        run: |
-          gcc test_restored.c -o t && ./t
+        run: gcc test_restored.c -o t && ./t
 
-      - name: Upload .so artifact
+      - name: Build debug APK (embeds native .so)
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.5
+          arguments: :app:assembleDebug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: libimage_processing_util_jni-arm64-v8a
-          path: libimage_processing_util_jni/libs/arm64-v8a/*.so
+          name: camera-02-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
