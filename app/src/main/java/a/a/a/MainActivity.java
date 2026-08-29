@@ -28,7 +28,6 @@ public class MainActivity extends Activity {
         final ByteBuffer yuv = ByteBuffer.allocateDirect(ySz + uvSz * 2);
 
         findViewById(R.id.btnConvert).setOnClickListener(v -> {
-            Surface s = preview.getHolder() != null ? null : null;
             // 真实场景下 bitmap 应为可绘制的 Surface; 此处演示调用契约
             int r = rotRot(rot);
             // nativeConvertAndroid420ToABGR(bitmap, image, yStride, uStride, vStride, pixStride, p10, rot, flip, w, h)
@@ -49,14 +48,15 @@ public class MainActivity extends Activity {
 
         findViewById(R.id.btnJpeg).setOnClickListener(v -> {
             byte[] jpeg = new byte[1024];
-            ImageProcessingUtil.nativeWriteJpegToSurface(preview.getHolder(), jpeg);
+            Surface surface = preview.getHolder().getSurface();
+            ImageProcessingUtil.nativeWriteJpegToSurface(surface, jpeg);
         });
     }
 
     private int rotRot(RadioGroup g) {
-        if (findViewById(R.id.r90).isChecked())  return 90;
-        if (findViewById(R.id.r180).isChecked()) return 180;
-        if (findViewById(R.id.r270).isChecked()) return 270;
+        if (((RadioButton)findViewById(R.id.r90)).isChecked())  return 90;
+        if (((RadioButton)findViewById(R.id.r180)).isChecked()) return 180;
+        if (((RadioButton)findViewById(R.id.r270)).isChecked()) return 270;
         return 0;
     }
 }
